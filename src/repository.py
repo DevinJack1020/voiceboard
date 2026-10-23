@@ -96,6 +96,8 @@ FEEDBACK_COLUMNS = (
     "classification_reason",
 )
 
+FILTER_COLUMNS = {"country", "user_type", "product_category", "category"}
+
 
 class VoiceBoardRepository:
     def __init__(self, database: Path | str):
@@ -183,4 +185,93 @@ class VoiceBoardRepository:
                 (inserted, batch_id),
             )
         return batch_id, inserted
+
+    def query_feedback(
+        self,
+        filters: Mapping[str, object],
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        clauses, parameters = _feedback_filters(filters)
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        with connect(self.database) as connection:
+            count = connection.execute(
+                f"SELECT COUNT(*) AS count FROM feedback{where}", parameters
+            ).fetchone()["count"]
+            rows = connection.execute(
+                f"""
+                SELECT * FROM feedback{where}
+                ORDER BY created_at DESC, id DESC
+                LIMIT ? OFFSET ?
+                """,
+                (*parameters, max(1, min(limit, 500)), max(0, offset)),
+            ).fetchall()
+        return [dict(row) for row in rows], int(count)
+
+    def distinct_feedback_values(self, column: str) -> list[str]:
+        if column not in FILTER_COLUMNS:
+            raise ValueError("不支持的筛选字段")
+        with connect(self.database) as connection:
+            rows = connection.execute(
+                f"SELECT DISTINCT {column} FROM feedback ORDER BY {column}"
+            ).fetchall()
+        return [str(row[column]) for row in rows if row[column]]
+
+    def revise_feedback(
+        self,
+        feedback_id: int,
+        category: str,
+        impact_level: int,
+        reason: str,
+    ) -> None:
+        with connect(self.database) as connection:
+            current = connection.execute(
+                "SELECT category, impact_level FROM feedback WHERE id = ?",
+                (feedback_id,),
+            ).fetchone()
+            if current is None:
+                raise ValueError("反馈记录不存在")
+            connection.execute(
+                """
+                UPDATE feedback
+                SET category = ?, impact_level = ?, classification_source = 'manual',
+                    confidence = 1.0, classification_reason = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (category, impact_level, reason, feedback_id),
+            )
+            connection.execute(
+                """
+                INSERT INTO feedback_revisions(
+                    feedback_id, previous_category, new_category,
+                    previous_impact, new_impact, reason
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    feedback_id,
+                    current["category"],
+                    category,
+                    current["impact_level"],
+                    impact_level,
+                    reason,
+                ),
+            )
+
+
+def _feedback_filters(filters: Mapping[str, object]) -> tuple[list[str], list[object]]:
+    clauses: list[str] = []
+    parameters: list[object] = []
+    for column in FILTER_COLUMNS:
+        value = filters.get(column)
+        if value:
+            clauses.append(f"{column} = ?")
+            parameters.append(value)
+    if filters.get("date_from"):
+        clauses.append("created_at >= ?")
+        parameters.append(filters["date_from"])
+    if filters.get("date_to"):
+        clauses.append("created_at <= ?")
+        parameters.append(filters["date_to"])
+    return clauses, parameters
 
