@@ -298,6 +298,43 @@ class VoiceBoardRepository:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def update_roadmap_item(
+        self,
+        item_id: int,
+        *,
+        title: str,
+        solution: str,
+        owner: str,
+        status: str,
+        target_version: str,
+    ) -> None:
+        with connect(self.database) as connection:
+            cursor = connection.execute(
+                """
+                UPDATE roadmap_items
+                SET title = ?, solution = ?, owner = ?, status = ?,
+                    target_version = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (title, solution, owner, status, target_version, item_id),
+            )
+            if cursor.rowcount != 1:
+                raise ValueError("需求卡不存在")
+
+    def set_roadmap_archived(self, item_id: int, archived: bool) -> None:
+        archived_at = "CURRENT_TIMESTAMP" if archived else "NULL"
+        with connect(self.database) as connection:
+            cursor = connection.execute(
+                f"""
+                UPDATE roadmap_items
+                SET archived_at = {archived_at}, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (item_id,),
+            )
+            if cursor.rowcount != 1:
+                raise ValueError("需求卡不存在")
+
 
 def _feedback_filters(filters: Mapping[str, object]) -> tuple[list[str], list[object]]:
     clauses: list[str] = []
