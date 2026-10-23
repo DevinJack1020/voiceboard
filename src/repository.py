@@ -204,7 +204,7 @@ class VoiceBoardRepository:
                 ORDER BY created_at DESC, id DESC
                 LIMIT ? OFFSET ?
                 """,
-                (*parameters, max(1, min(limit, 500)), max(0, offset)),
+                (*parameters, max(1, min(limit, 20_000)), max(0, offset)),
             ).fetchall()
         return [dict(row) for row in rows], int(count)
 
