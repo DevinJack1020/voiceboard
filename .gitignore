@@ -12,6 +12,7 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+.tmp/
 
 # Runtime data
 data/*.db
