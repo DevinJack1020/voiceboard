@@ -4,8 +4,11 @@ from dataclasses import dataclass, field
 
 from src.classifiers.base import FeedbackClassifier
 from src.classifiers.rule import RuleClassifier
-from src.importer import RowError, parse_feedback_csv
+from src.importer import CsvValidationError, RowError, parse_feedback_csv
 from src.repository import VoiceBoardRepository
+
+
+MAX_DEEPSEEK_RECORDS = 100
 
 
 @dataclass
@@ -50,6 +53,11 @@ class ImportService:
         )
         if preview.errors:
             return prepared
+        if mode == "deepseek" and len(preview.records) > MAX_DEEPSEEK_RECORDS:
+            raise CsvValidationError(
+                f"DeepSeek 单批最多处理 {MAX_DEEPSEEK_RECORDS} 条反馈，"
+                "请拆分文件或改用离线规则，避免意外 API 费用。"
+            )
         selected = classifier or (RuleClassifier() if mode == "rule" else None)
         if selected is None:
             raise ValueError("DeepSeek 模式需要配置分类器")

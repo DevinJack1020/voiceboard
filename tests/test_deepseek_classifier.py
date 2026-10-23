@@ -117,3 +117,19 @@ def test_timeout_is_retried_and_error_never_contains_api_key():
     assert len(session.requests) == 2
     assert "secret-key" not in str(captured.value)
 
+
+def test_model_reason_is_bounded_to_the_documented_length():
+    response = FakeResponse(api_payload({
+        "category": "物流",
+        "impact_level": 4,
+        "confidence": 0.8,
+        "reason": "长" * 150,
+    }))
+    classifier = DeepSeekClassifier(
+        api_key="secret-key", session=FakeSession([response])
+    )
+
+    result = classifier.classify({"feedback_text": "物流很慢", "rating": 2})
+
+    assert len(result.reason) == 100
+

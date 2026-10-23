@@ -169,6 +169,6 @@ def _extract_result(response_data: dict) -> ClassificationResult:
         category=category,
         impact_level=impact,
         confidence=round(float(confidence), 2),
-        reason=reason[:500],
+        reason=reason[:100],
         source="deepseek",
     )

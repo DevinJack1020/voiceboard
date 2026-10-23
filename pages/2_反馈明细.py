@@ -22,6 +22,8 @@ service = FeedbackService(repository)
 
 st.title("反馈明细")
 st.caption("查看真实入库反馈、分类来源和影响程度，并对自动结果进行人工修订。")
+if notice := st.session_state.pop("feedback_notice", None):
+    st.success(notice)
 
 if repository.count_feedback() == 0:
     st.info("还没有反馈。请先前往“数据导入”上传 CSV。", icon="ℹ️")
@@ -116,5 +118,5 @@ if submitted:
     except ValueError as error:
         st.error(str(error))
     else:
-        st.success("修订已保存，并写入审计记录。")
+        st.session_state["feedback_notice"] = "修订已保存，并写入审计记录。"
         st.rerun()

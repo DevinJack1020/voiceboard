@@ -18,6 +18,15 @@ class FailingClassifier:
         raise DeepSeekAPIError("DeepSeek 请求超时，请改用离线规则")
 
 
+class CountingClassifier:
+    def __init__(self):
+        self.calls = 0
+
+    def classify(self, record):
+        self.calls += 1
+        raise AssertionError("超过安全上限时不应调用付费 API")
+
+
 def count_batches(database) -> int:
     with sqlite3.connect(database) as connection:
         return connection.execute("SELECT COUNT(*) FROM import_batches").fetchone()[0]
@@ -65,4 +74,24 @@ def test_classifier_failure_creates_no_batch_or_feedback(tmp_path):
 
     assert repository.count_feedback() == 0
     assert count_batches(database) == 0
+
+
+def test_deepseek_import_has_a_bounded_paid_api_batch(tmp_path):
+    database = tmp_path / "voiceboard.db"
+    repository = VoiceBoardRepository(database)
+    repository.initialize()
+    service = ImportService(repository)
+    rows = [
+        "feedback_text,country,user_type,product_category,rating,created_at",
+        *[
+            f"第{index}条物流反馈,SG,新用户,电子产品,1,2026-10-20"
+            for index in range(101)
+        ],
+    ]
+    classifier = CountingClassifier()
+
+    with pytest.raises(ValueError, match="最多处理 100 条"):
+        service.prepare("\n".join(rows).encode("utf-8"), "deepseek", classifier)
+
+    assert classifier.calls == 0
 

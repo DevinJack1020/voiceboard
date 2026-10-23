@@ -47,6 +47,7 @@ mode_label = st.radio(
 )
 api_key = ""
 if mode_label == "DeepSeek":
+    st.caption("为避免意外 API 费用，DeepSeek 模式单批最多处理 100 条反馈。")
     api_key = st.text_input(
         "DeepSeek API Key",
         type="password",
@@ -67,6 +68,10 @@ if uploaded is None:
 else:
     st.caption(f"已选择：{uploaded.name}（{uploaded.size / 1024:.1f} KB）")
     if st.button("校验并生成分类预览", type="primary"):
+        # A failed new attempt must never leave an older file's preview
+        # available for confirmation under the newly selected filename.
+        st.session_state.pop("prepared_import", None)
+        st.session_state.pop("prepared_filename", None)
         try:
             mode = "deepseek" if mode_label == "DeepSeek" else "rule"
             classifier = None

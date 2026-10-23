@@ -17,6 +17,8 @@ service = RoadmapService(repository)
 
 st.title("产品路线图")
 st.caption("管理真实需求卡的负责人、处理状态、目标版本和产品方案。")
+if notice := st.session_state.pop("roadmap_notice", None):
+    st.success(notice)
 
 all_items = service.list_items(include_archived=True)
 if not all_items:
@@ -116,7 +118,7 @@ for item in items:
             except ValueError as error:
                 st.error(str(error))
             else:
-                st.success("需求卡已更新。")
+                st.session_state["roadmap_notice"] = "需求卡已更新。"
                 st.rerun()
         if st.button("归档需求卡", key=f"archive-{item['id']}"):
             service.archive_item(item["id"])
