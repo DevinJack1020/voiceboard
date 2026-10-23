@@ -1,0 +1,2 @@
+"""VoiceBoard application package."""
+
