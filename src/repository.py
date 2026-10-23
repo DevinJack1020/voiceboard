@@ -258,6 +258,46 @@ class VoiceBoardRepository:
                 ),
             )
 
+    def create_roadmap_item(self, item: Mapping[str, object]) -> tuple[int, bool]:
+        with connect(self.database) as connection:
+            cursor = connection.execute(
+                """
+                INSERT INTO roadmap_items(
+                    source_key, title, category, frequency, average_impact,
+                    priority_score, filter_snapshot, solution, evidence_summary,
+                    owner, target_version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(source_key) DO NOTHING
+                """,
+                (
+                    item["source_key"],
+                    item["title"],
+                    item["category"],
+                    item["frequency"],
+                    item["average_impact"],
+                    item["priority_score"],
+                    item["filter_snapshot"],
+                    item["solution"],
+                    item["evidence_summary"],
+                    item.get("owner", ""),
+                    item.get("target_version", ""),
+                ),
+            )
+            created = cursor.rowcount == 1
+            row = connection.execute(
+                "SELECT id FROM roadmap_items WHERE source_key = ?",
+                (item["source_key"],),
+            ).fetchone()
+        return int(row["id"]), created
+
+    def list_roadmap_items(self, include_archived: bool = False) -> list[dict]:
+        where = "" if include_archived else " WHERE archived_at IS NULL"
+        with connect(self.database) as connection:
+            rows = connection.execute(
+                f"SELECT * FROM roadmap_items{where} ORDER BY priority_score DESC, id DESC"
+            ).fetchall()
+        return [dict(row) for row in rows]
+
 
 def _feedback_filters(filters: Mapping[str, object]) -> tuple[list[str], list[object]]:
     clauses: list[str] = []
