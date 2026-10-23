@@ -145,3 +145,42 @@ class VoiceBoardRepository:
             row = connection.execute("SELECT COUNT(*) AS count FROM feedback").fetchone()
             return int(row["count"])
 
+    def list_fingerprints(self) -> set[str]:
+        with connect(self.database) as connection:
+            rows = connection.execute("SELECT fingerprint FROM feedback").fetchall()
+            return {str(row["fingerprint"]) for row in rows}
+
+    def import_feedback(
+        self,
+        filename: str,
+        mode: str,
+        total_rows: int,
+        records: Iterable[Mapping[str, object]],
+    ) -> tuple[int, int]:
+        """Create the batch and all feedback in one transaction."""
+        placeholders = ", ".join("?" for _ in FEEDBACK_COLUMNS)
+        columns = ", ".join(FEEDBACK_COLUMNS)
+        statement = (
+            f"INSERT INTO feedback(batch_id, {columns}) "
+            f"VALUES (?, {placeholders}) "
+            "ON CONFLICT(fingerprint) DO NOTHING"
+        )
+        with connect(self.database) as connection:
+            cursor = connection.execute(
+                """
+                INSERT INTO import_batches(filename, classification_mode, total_rows)
+                VALUES (?, ?, ?)
+                """,
+                (filename, mode, total_rows),
+            )
+            batch_id = int(cursor.lastrowid)
+            inserted = 0
+            for record in records:
+                values = (batch_id, *(record[column] for column in FEEDBACK_COLUMNS))
+                inserted += connection.execute(statement, values).rowcount
+            connection.execute(
+                "UPDATE import_batches SET inserted_rows = ? WHERE id = ?",
+                (inserted, batch_id),
+            )
+        return batch_id, inserted
+
