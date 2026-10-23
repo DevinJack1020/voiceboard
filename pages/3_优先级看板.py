@@ -7,6 +7,7 @@ import streamlit as st
 
 from src.analytics import calculate_priority
 from src.config import database_path
+from src.exports import export_csv
 from src.repository import VoiceBoardRepository
 from src.services.feedback_service import FeedbackFilters, FeedbackService
 from src.ui import configure_page, render_sidebar_status
@@ -88,6 +89,16 @@ with table_column:
             }
         ),
         hide_index=True,
+        use_container_width=True,
+    )
+    st.download_button(
+        "导出优先级结果",
+        data=export_csv(
+            priorities,
+            ("category", "frequency", "average_impact", "priority_score"),
+        ),
+        file_name="voiceboard_priority.csv",
+        mime="text/csv",
         use_container_width=True,
     )
 

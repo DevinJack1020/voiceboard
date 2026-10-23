@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import math
+from dataclasses import asdict
 
 import pandas as pd
 import streamlit as st
 
 from src.classifiers.base import BUSINESS_CATEGORIES
 from src.config import database_path
+from src.exports import export_csv
 from src.repository import VoiceBoardRepository
 from src.services.feedback_service import FeedbackFilters, FeedbackService
 from src.ui import configure_page, render_sidebar_status
@@ -77,6 +79,13 @@ st.dataframe(
     pd.DataFrame(result.records)[display_columns],
     hide_index=True,
     use_container_width=True,
+)
+all_filtered_records, _ = repository.query_feedback(asdict(filters), limit=20_000)
+st.download_button(
+    "导出当前筛选反馈",
+    data=export_csv(all_filtered_records, display_columns),
+    file_name="voiceboard_filtered_feedback.csv",
+    mime="text/csv",
 )
 
 st.subheader("人工修订")

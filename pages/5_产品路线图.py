@@ -3,6 +3,7 @@ from __future__ import annotations
 import streamlit as st
 
 from src.config import database_path
+from src.exports import export_csv
 from src.repository import VoiceBoardRepository
 from src.services.roadmap_service import ROADMAP_STATUSES, RoadmapService
 from src.ui import configure_page, render_sidebar_status
@@ -44,6 +45,29 @@ if not items:
     st.stop()
 
 st.caption(f"当前显示 {len(items)} 张需求卡")
+st.download_button(
+    "导出当前路线图",
+    data=export_csv(
+        items,
+        (
+            "id",
+            "title",
+            "category",
+            "frequency",
+            "average_impact",
+            "priority_score",
+            "owner",
+            "status",
+            "target_version",
+            "solution",
+            "created_at",
+            "updated_at",
+            "archived_at",
+        ),
+    ),
+    file_name="voiceboard_roadmap.csv",
+    mime="text/csv",
+)
 status_columns = st.columns(len(ROADMAP_STATUSES))
 for column, status in zip(status_columns, ROADMAP_STATUSES, strict=True):
     with column:
