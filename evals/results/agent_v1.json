@@ -1,0 +1,480 @@
+{
+  "schema_version": 1,
+  "run_id": "agent-v1-20261102T054951Z",
+  "timestamp": "2026-11-02T05:49:51+00:00",
+  "mode": "template-deterministic",
+  "engine": {
+    "retrieval": "SQLite 维度过滤 + 中文 bigram + BM25(k1=1.5,b=0.75)",
+    "answer": "确定性模板（聚合/证据/对比/拒答），无 LLM、无向量库",
+    "llm": false
+  },
+  "corpus": {
+    "source": "builtin_fixture",
+    "file": null,
+    "records": 30,
+    "categories": {
+      "商品质量": 5,
+      "客服": 4,
+      "搜索推荐": 3,
+      "支付": 6,
+      "物流": 8,
+      "退换货": 4
+    },
+    "countries": {
+      "ID": 5,
+      "MY": 6,
+      "SG": 9,
+      "TH": 5,
+      "US": 5
+    },
+    "date_range": [
+      "2026-09-02",
+      "2026-10-31"
+    ],
+    "note": "确定性评测语料（30 条自造中文跨境电商反馈），用于机制回归与可复现评测，不是真实用户数据，数字不代表线上效果；真实数据可用性冒烟见 real_data_smoke。"
+  },
+  "questions": {
+    "file": "evals/agent_questions_v1.csv",
+    "n": 15,
+    "types": {
+      "aggregate": 4,
+      "comparison": 3,
+      "evidence": 4,
+      "refusal": 4
+    }
+  },
+  "config": {
+    "top_k": 5,
+    "bm25": {
+      "k1": 1.5,
+      "b": 0.75
+    },
+    "intent_map": {
+      "aggregate": [
+        "count",
+        "attribution"
+      ],
+      "evidence": [
+        "evidence"
+      ],
+      "comparison": [
+        "comparison"
+      ],
+      "refusal": [
+        "refusal"
+      ]
+    },
+    "llm_enabled": false
+  },
+  "metrics": {
+    "n_questions": 15,
+    "n_answerable": 11,
+    "n_refusal_expected": 4,
+    "n_hit_eligible": 8,
+    "hit_scope": "聚合类 + 证据类（8 题）；对比类不参与 hit@5，另见 comparison_coverage",
+    "retrieval_hit_at_5": 0.875,
+    "retrieval_hit_at_5_detail": "7/8",
+    "comparison_coverage": 1.0,
+    "comparison_coverage_detail": "3/3",
+    "citation_total": 25,
+    "citation_valid": 25,
+    "citation_valid_rate": 1.0,
+    "refusal_accuracy": 1.0,
+    "refusal_accuracy_detail": "4/4",
+    "false_refusal_rate": 0.0909,
+    "false_refusal_detail": "1/11",
+    "intent_match_rate": 0.9333,
+    "keyword_match_rate": 0.9333,
+    "keyword_match_detail": "14/15",
+    "latency_ms": {
+      "p50": 3.52,
+      "p95": 8.67,
+      "mean": 4.5,
+      "max": 9.38
+    },
+    "questions_file": "evals/agent_questions_v1.csv"
+  },
+  "per_question": [
+    {
+      "question_id": "q01",
+      "expected_type": "aggregate",
+      "intent": "count",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "3/3",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 5.55,
+      "matched_terms": "物流",
+      "retrieved": "F07;F04;F02;F01;F03",
+      "cited": "F07;F04;F02",
+      "refusal_reason": null,
+      "answer_first_line": "在「分类=物流」范围内，共有 8 条反馈。 平均影响 4.25/5，平均评分 1.75/5，差评（1–2 星）占比 87.5%。 分类分布：物流 8 条。 国家分布：SG 3 条、MY 2 条、ID 1 条、TH 1 条、US 1 条。 代"
+    },
+    {
+      "question_id": "q02",
+      "expected_type": "aggregate",
+      "intent": "attribution",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "3/3",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 3.85,
+      "matched_terms": "",
+      "retrieved": "F01;F09;F17;F20;F24",
+      "cited": "F01;F09;F17",
+      "refusal_reason": null,
+      "answer_first_line": "当前库内反馈最多的分类是「物流」：8 条（占 26.7%）。全库共 30 条反馈。 分类分布：物流 8 条、支付 6 条、商品质量 5 条、客服 4 条、退换货 4 条、搜索推荐 3 条。 国家分布：SG 9 条、MY 6 条、ID 5 条"
+    },
+    {
+      "question_id": "q03",
+      "expected_type": "aggregate",
+      "intent": "attribution",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "3/3",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 3.52,
+      "matched_terms": "质量",
+      "retrieved": "F17;F16;F19;F18;F15",
+      "cited": "F17;F16;F19",
+      "refusal_reason": null,
+      "answer_first_line": "「商品质量」是本次检索的分类范围：共 5 条反馈，平均影响 4.40/5。 分类分布：商品质量 5 条。 国家分布：ID 1 条、MY 1 条、SG 1 条、TH 1 条、US 1 条。 代表证据：F17「耳机左耳没声音，明显是质量问题」；"
+    },
+    {
+      "question_id": "q04",
+      "expected_type": "aggregate",
+      "intent": "count",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "3/3",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 3.21,
+      "matched_terms": "",
+      "retrieved": "F01;F09;F17;F20;F24",
+      "cited": "F01;F09;F17",
+      "refusal_reason": null,
+      "answer_first_line": "在「起始日期=2026-10-01；截止日期<2026-11-01」范围内，共有 16 条反馈。 平均影响 4.44/5，平均评分 1.56/5，差评（1–2 星）占比 87.5%。 分类分布：支付 4 条、物流 4 条、商品质量 3 条、"
+    },
+    {
+      "question_id": "q05",
+      "expected_type": "evidence",
+      "intent": "evidence",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "3/3",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 3.1,
+      "matched_terms": "物流;两周;还没;没到",
+      "retrieved": "F02;F07;F04;F01;F03",
+      "cited": "F02;F07;F04",
+      "refusal_reason": null,
+      "answer_first_line": "在「分类=物流」范围内找到 8 条反馈，下列是检索命中的前 3 条原文： 1. F02「物流太慢，下单两周了还没到，比预计晚了一周」（物流 / MY / 2 星 / 影响 4 / 2026-09-12） 2. F07「物流比预计慢两天，东西"
+    },
+    {
+      "question_id": "q06",
+      "expected_type": "evidence",
+      "intent": "refusal",
+      "refused": true,
+      "retrieval_hit": false,
+      "citation": "0/0",
+      "keyword_hit": false,
+      "comparison_coverage": null,
+      "latency_ms": 3.27,
+      "matched_terms": "",
+      "retrieved": "",
+      "cited": "",
+      "refusal_reason": "问题中的主题词在当前库内没有出现",
+      "answer_first_line": "当前库内没有足够证据回答这个问题。 原因：问题中的主题词在当前库内没有出现。 已尝试的检索口径：全部反馈（无维度过滤）；候选 30 条；没有命中任何主题词（词面匹配为空）。 处理方式：不猜测、不调用外部知识补全、不把无关原文硬当作证据。如需"
+    },
+    {
+      "question_id": "q07",
+      "expected_type": "evidence",
+      "intent": "evidence",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "1/1",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 3.71,
+      "matched_terms": "客服",
+      "retrieved": "F20",
+      "cited": "F20",
+      "refusal_reason": null,
+      "answer_first_line": "在「分类=客服；国家=SG」范围内找到 1 条反馈，下列是检索命中的前 1 条原文： 1. F20「客服一直机器人回复，转人工排了四十分钟也没人接」（客服 / SG / 1 星 / 影响 5 / 2026-10-27） 命中词：客服。 口径"
+    },
+    {
+      "question_id": "q08",
+      "expected_type": "evidence",
+      "intent": "evidence",
+      "refused": false,
+      "retrieval_hit": true,
+      "citation": "3/3",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 5.18,
+      "matched_terms": "支付;重复;复扣;扣款;付款;款失;失败",
+      "retrieved": "F09;F10;F13;F11;F12",
+      "cited": "F09;F10;F13",
+      "refusal_reason": null,
+      "answer_first_line": "在「分类=支付」范围内找到 6 条反馈，下列是检索命中的前 3 条原文： 1. F09「用信用卡付款失败三次，最后换了另一个支付方式才成功」（支付 / SG / 1 星 / 影响 5 / 2026-10-30） 2. F10「重复扣款了两笔"
+    },
+    {
+      "question_id": "q09",
+      "expected_type": "comparison",
+      "intent": "comparison",
+      "refused": false,
+      "retrieval_hit": null,
+      "citation": "2/2",
+      "keyword_hit": true,
+      "comparison_coverage": true,
+      "latency_ms": 9.38,
+      "matched_terms": "",
+      "retrieved": "F07;F04;F02;F13;F09;F10",
+      "cited": "F02;F09",
+      "refusal_reason": null,
+      "answer_first_line": "对比（检索口径：全部反馈（无维度过滤）；比较维度：反馈条数）： - 物流：8 条，平均影响 4.25/5，平均评分 1.75/5；代表证据 F02「物流太慢，下单两周了还没到，比预计晚了一周」。 - 支付：6 条，平均影响 4.33/5，平"
+    },
+    {
+      "question_id": "q10",
+      "expected_type": "comparison",
+      "intent": "comparison",
+      "refused": false,
+      "retrieval_hit": null,
+      "citation": "2/2",
+      "keyword_hit": true,
+      "comparison_coverage": true,
+      "latency_ms": 8.67,
+      "matched_terms": "",
+      "retrieved": "F01;F09;F17;F10;F26;F15",
+      "cited": "F01;F10",
+      "refusal_reason": null,
+      "answer_first_line": "对比（检索口径：全部反馈（无维度过滤）；比较维度：反馈条数）： - SG：9 条，平均影响 4.33/5，平均评分 1.67/5；代表证据 F01「包裹显示已签收但我没收到，联系快递也没用」。 - MY：6 条，平均影响 4.00/5，平均"
+    },
+    {
+      "question_id": "q11",
+      "expected_type": "comparison",
+      "intent": "comparison",
+      "refused": false,
+      "retrieval_hit": null,
+      "citation": "2/2",
+      "keyword_hit": true,
+      "comparison_coverage": true,
+      "latency_ms": 7.01,
+      "matched_terms": "",
+      "retrieved": "F07;F04;F02;F22;F23;F21",
+      "cited": "F02;F22",
+      "refusal_reason": null,
+      "answer_first_line": "对比（检索口径：全部反馈（无维度过滤）；比较维度：平均影响程度）： - 物流：8 条，平均影响 4.25/5，平均评分 1.75/5；代表证据 F02「物流太慢，下单两周了还没到，比预计晚了一周」。 - 客服：4 条，平均影响 4.00/5"
+    },
+    {
+      "question_id": "q12",
+      "expected_type": "refusal",
+      "intent": "refusal",
+      "refused": true,
+      "retrieval_hit": null,
+      "citation": "0/0",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 3.21,
+      "matched_terms": "",
+      "retrieved": "",
+      "cited": "",
+      "refusal_reason": "问题涉及经营/财务指标；反馈库只有用户反馈文本、分类与影响度字段，没有这些数据",
+      "answer_first_line": "当前库内没有足够证据回答这个问题。 原因：问题涉及经营/财务指标；反馈库只有用户反馈文本、分类与影响度字段，没有这些数据。 已尝试的检索口径：全部反馈（无维度过滤）；候选 30 条；没有命中任何主题词（词面匹配为空）。 处理方式：不猜测、不"
+    },
+    {
+      "question_id": "q13",
+      "expected_type": "refusal",
+      "intent": "refusal",
+      "refused": true,
+      "retrieval_hit": null,
+      "citation": "0/0",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 2.76,
+      "matched_terms": "物流;流比",
+      "retrieved": "",
+      "cited": "",
+      "refusal_reason": "问题涉及外部竞品/行业信息；当前反馈库不包含竞品数据",
+      "answer_first_line": "当前库内没有足够证据回答这个问题。 原因：问题涉及外部竞品/行业信息；当前反馈库不包含竞品数据。 已尝试的检索口径：分类=物流；候选 8 条；命中的主题词：流比。 处理方式：不猜测、不调用外部知识补全、不把无关原文硬当作证据。如需回答，请先"
+    },
+    {
+      "question_id": "q14",
+      "expected_type": "refusal",
+      "intent": "refusal",
+      "refused": true,
+      "retrieval_hit": null,
+      "citation": "0/0",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 2.39,
+      "matched_terms": "",
+      "retrieved": "",
+      "cited": "",
+      "refusal_reason": "按当前检索口径（分类=物流；国家=BR）过滤后为 0 条反馈",
+      "answer_first_line": "当前库内没有足够证据回答这个问题。 原因：按当前检索口径（分类=物流；国家=BR）过滤后为 0 条反馈。 已尝试的检索口径：分类=物流；国家=BR；候选 0 条；没有命中任何主题词（词面匹配为空）。 处理方式：不猜测、不调用外部知识补全、不"
+    },
+    {
+      "question_id": "q15",
+      "expected_type": "refusal",
+      "intent": "refusal",
+      "refused": true,
+      "retrieval_hit": null,
+      "citation": "0/0",
+      "keyword_hit": true,
+      "comparison_coverage": null,
+      "latency_ms": 2.69,
+      "matched_terms": "",
+      "retrieved": "",
+      "cited": "",
+      "refusal_reason": "问题中的主题词在当前库内没有出现",
+      "answer_first_line": "当前库内没有足够证据回答这个问题。 原因：问题中的主题词在当前库内没有出现。 已尝试的检索口径：全部反馈（无维度过滤）；候选 30 条；没有命中任何主题词（词面匹配为空）。 处理方式：不猜测、不调用外部知识补全、不把无关原文硬当作证据。如需"
+    }
+  ],
+  "limitations": [
+    "受控小语料（30 条）且问题与语料同源设计，hit@5 偏乐观，不能当线上效果。",
+    "hit@5 只在 8 条依赖排序检索的题目上计算；3 条对比题由维度过滤+SQL 聚合出答案，因此改用 comparison_coverage 检查两侧覆盖与引用，避免对已过滤候选做无信息 hit 判定。",
+    "纯字面匹配：同义改写（如“钱退不回来”）检索不到“退款”，q06 是已知 badcase（误拒答）。",
+    "不跨语言：中文问题检索英文反馈会命中很低（真实评测集多为英文/中英混排）。",
+    "真实数据冒烟（78 条真实评论）只验证「能检索/能引用/能拒答」，没有问答级标注，不算 hit@5；且真实数据的 country 是按 App 主要市场推断的中文名（印度/美国/中国/多国跨境），检索层已加「库内实际取值校正」（多国（跨境）→GLOBAL 跨境专列，不并入单一国家），但“未标注”这类非国家取值无法按国家过滤。",
+    "真实数据默认过滤 2 条 authored-adversarial 注入探针（非真实评论）；如果把它们放进 LLM prompt，属于 prompt injection 风险，当前 LLM 路径默认关闭。",
+    "未做 embedding/向量库/语义 rerank，也未做多轮追问、权限隔离与线上埋点。",
+    "延迟是本机单进程模板路径的 wall time，不含 Streamlit 渲染和真实网络。"
+  ],
+  "duration_ms": 110.13,
+  "real_data_smoke": {
+    "corpus_file": "evals/feedback_eval_v1.csv",
+    "records": 78,
+    "skipped_adversarial": 2,
+    "include_adversarial": false,
+    "label_source": "项目内置 RuleClassifier 现场分类（仅用 feedback_text/rating，不使用 golden_category / golden_impact_level，避免标签泄漏）；impact_level 为规则推导值（由 rating 推导 + 高影响词加成），不是人工影响度标签",
+    "country_semantics": "真实集的 country 不是评论者自报，而是按 App 主要市场推断的中文名（AliExpress/Alibaba=多国（跨境）、Amazon Shopping=美国、印度电商 App=印度、中文购物语料=中国）；检索层已做中文名↔canonical code 校正（印度→IN、美国→US、中国→CN，多国（跨境）→GLOBAL 跨境专列，不并入单一国家）",
+    "category_predictions": {
+      "商品质量": 9,
+      "客服": 4,
+      "待确认": 30,
+      "搜索推荐": 11,
+      "支付": 7,
+      "物流": 5,
+      "退换货": 12
+    },
+    "note": "把真实标注集当检索语料做可用性冒烟：不计算 hit@5（其标签用于分类而非问答），分类字段由项目内置规则分类器现场生成、不使用 golden 标签，impact 为由 rating 推导的规则值（非人工标签）；已默认过滤 2 条 authored-adversarial 注入探针。真实数据以英文/中英混排为主、国家字段为按市场推断的中文名（多国（跨境）映射 GLOBAL 跨境专列），中文问题命中率低属于预期（跨语言限制），详见 docs/agent-scope.md。",
+    "questions": [
+      {
+        "question": "物流类反馈有多少条？",
+        "refused": false,
+        "refusal_reason": null,
+        "filter_summary": "分类=物流",
+        "retrieval_count": 5,
+        "top_ids": [
+          "FB009",
+          "FB005",
+          "FB002",
+          "FB007",
+          "FB004"
+        ],
+        "citation_total": 3,
+        "citation_valid": 3,
+        "latency_ms": 3.5,
+        "answer_first_line": "在「分类=物流」范围内，共有 5 条反馈。 平均影响 4.40/5，平均评分 1.60/5，差评（1–2 星）占比 100.0%。 分类分布：物流 5 条。 国家分布：印度 3 条、多国（跨境） 2 条。 代表证据：FB009「Recent…"
+      },
+      {
+        "question": "退款相关的反馈有哪些？",
+        "refused": false,
+        "refusal_reason": null,
+        "filter_summary": "分类=退换货",
+        "retrieval_count": 5,
+        "top_ids": [
+          "FB065",
+          "FB066",
+          "FB054",
+          "FB060",
+          "FB063"
+        ],
+        "citation_total": 3,
+        "citation_valid": 3,
+        "latency_ms": 2.99,
+        "answer_first_line": "「退换货」是本次检索的分类范围：共 12 条反馈，平均影响 4.92/5。 分类分布：退换货 12 条。 国家分布：印度 6 条、中国 4 条、多国（跨境） 2 条。 代表证据：FB065「Ali's policy says that if…"
+      },
+      {
+        "question": "客服相关的反馈有多少条？",
+        "refused": false,
+        "refusal_reason": null,
+        "filter_summary": "分类=客服",
+        "retrieval_count": 4,
+        "top_ids": [
+          "FB025",
+          "FB008",
+          "FB053",
+          "FB056"
+        ],
+        "citation_total": 3,
+        "citation_valid": 3,
+        "latency_ms": 2.36,
+        "answer_first_line": "在「分类=客服」范围内，共有 4 条反馈。 平均影响 5.00/5，平均评分 1.00/5，差评（1–2 星）占比 100.0%。 分类分布：客服 4 条。 国家分布：多国（跨境） 2 条、中国 1 条、印度 1 条。 代表证据：FB025…"
+      },
+      {
+        "question": "delivery delay or lost parcel feedback",
+        "refused": false,
+        "refusal_reason": null,
+        "filter_summary": "全部反馈（无维度过滤）",
+        "retrieval_count": 5,
+        "top_ids": [
+          "FB003",
+          "FB009",
+          "FB005",
+          "FB001",
+          "FB007"
+        ],
+        "citation_total": 3,
+        "citation_valid": 3,
+        "latency_ms": 6.8,
+        "answer_first_line": "在「全部反馈（无维度过滤）」范围内找到 78 条反馈，下列是检索命中的前 3 条原文： 1. FB003「You can't get a tracking number until the package shows delivered. …"
+      },
+      {
+        "question": "印度用户对物流的反馈有哪些？",
+        "refused": false,
+        "refusal_reason": null,
+        "filter_summary": "分类=物流；国家=印度",
+        "retrieval_count": 3,
+        "top_ids": [
+          "FB005",
+          "FB007",
+          "FB004"
+        ],
+        "citation_total": 3,
+        "citation_valid": 3,
+        "latency_ms": 3.32,
+        "answer_first_line": "「物流」是本次检索的分类范围：共 3 条反馈，平均影响 4.33/5。 分类分布：物流 3 条。 国家分布：印度 3 条。 代表证据：FB005「Worst delivery experience this app never delive…"
+      },
+      {
+        "question": "巴西市场用户对物流的抱怨是什么？",
+        "refused": true,
+        "refusal_reason": "按当前检索口径（分类=物流；国家=BR）过滤后为 0 条反馈",
+        "filter_summary": "分类=物流；国家=BR",
+        "retrieval_count": 0,
+        "top_ids": [],
+        "citation_total": 0,
+        "citation_valid": 0,
+        "latency_ms": 2.99,
+        "answer_first_line": "当前库内没有足够证据回答这个问题。 原因：按当前检索口径（分类=物流；国家=BR）过滤后为 0 条反馈。 已尝试的检索口径：分类=物流；国家=BR；候选 0 条；没有命中任何主题词（词面匹配为空）。 处理方式：不猜测、不调用外部知识补全、不…"
+      }
+    ],
+    "summary": {
+      "n_questions": 6,
+      "with_evidence": 5,
+      "refused": 1,
+      "citation_valid_rate": 1.0,
+      "citation_total": 15,
+      "citation_valid": 15,
+      "declared_limitation_questions": [
+        "巴西市场用户对物流的抱怨是什么？"
+      ]
+    }
+  }
+}

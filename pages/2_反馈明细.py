@@ -10,6 +10,7 @@ from src.classifiers.base import BUSINESS_CATEGORIES
 from src.config import database_path
 from src.exports import export_csv
 from src.repository import VoiceBoardRepository
+from src.services.evaluation_service import EvaluationService, format_int, format_percent
 from src.services.feedback_service import FeedbackFilters, FeedbackService
 from src.ui import configure_page, render_sidebar_status
 
@@ -19,6 +20,7 @@ render_sidebar_status()
 repository = VoiceBoardRepository(database_path())
 repository.initialize()
 service = FeedbackService(repository)
+evaluation_service = EvaluationService(repository)
 
 st.title("反馈明细")
 st.caption("查看真实入库反馈、分类来源和影响程度，并对自动结果进行人工修订。")
@@ -28,6 +30,18 @@ if notice := st.session_state.pop("feedback_notice", None):
 if repository.count_feedback() == 0:
     st.info("还没有反馈。请先前往“数据导入”上传 CSV。", icon="ℹ️")
     st.stop()
+
+revision_stats = evaluation_service.revision_statistics()
+stat_columns = st.columns(4)
+stat_columns[0].metric("已分类反馈", format_int(revision_stats.classified_count))
+stat_columns[1].metric("待确认反馈", format_int(revision_stats.uncertain_count))
+stat_columns[2].metric("待确认占比", format_percent(revision_stats.uncertain_rate))
+stat_columns[3].metric("人工修订率", format_percent(revision_stats.human_revision_rate))
+st.caption(
+    "口径：待确认占比 = 待确认反馈数 / 已分类反馈数；"
+    "人工修订率 = 有修订记录的反馈数 / 已分类反馈数（分类来源 rule/deepseek/manual）。"
+    "离线评测准确率与 Badcase 归因见左侧“评测与Badcase”页。"
+)
 
 
 def filter_select(label: str, column: str) -> str | None:

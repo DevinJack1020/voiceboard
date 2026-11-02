@@ -49,3 +49,37 @@ CSV bytes
 - DeepSeek 输出必须通过枚举、类型和范围验证，不能进入 SQL、文件路径或命令。
 - CSV 下载对以 `= + - @` 开头的字符串添加安全前缀。
 - 单次上传上限 10 MB、20,000 行；分析查询同样限制为 20,000 条。
+
+## AI 分类链路与失败路径
+
+```text
+上传 CSV（10 MB / 20,000 行校验）
+  → 选择分类模式 rule | deepseek
+  → DeepSeek 模式：先校验单批 ≤ 100 条（超出直接拒绝）
+      → https://api.deepseek.com/chat/completions
+         JSON 模式、thinking disabled、temperature=0、max_tokens=300
+         连接 5s / 读取 30s 超时；仅超时与 429/5xx 重试 1 次；禁止重定向
+      → 解析 choices[0].message.content 为 JSON
+      → 校验 category 枚举 / impact_level 1–5 整数 / confidence 0–1 / reason 非空
+          ├─ 通过 → ClassificationResult(source='deepseek')
+          └─ 不通过或网络失败 → DeepSeekAPIError → 预览失败，整批不写入
+  → rule 模式：关键词评分
+      ├─ 唯一最高分 → 分类 + 命中关键词理由
+      └─ 无命中 / 多类并列 → 「待确认」（confidence 0.0 / 0.4）
+  → 用户在预览中确认 → import_batches + feedback 同事务写入
+  → 人工修订 → feedback 当前值更新为 manual + feedback_revisions 审计
+```
+
+失败路径清单：
+
+| 失败场景 | 系统行为 | 用户可执行的下一步 |
+| --- | --- | --- |
+| 未配置 API Key | 构造分类器时即报错，无网络请求 | 填写 Key 或改用离线规则 |
+| 单批超过 100 条 | 预览前拒绝，提示拆分文件或改用规则 | 拆分 CSV / 换规则模式 |
+| 网络超时 / 5xx / 429 | 重试 1 次后仍失败则整批拒绝 | 稍后重试或改用离线规则 |
+| 401 / 402 | 不重试，直接提示 Key 无效 / 余额不足 | 检查配置 |
+| 模型返回非 JSON / 非法枚举 / 越界数值 | 校验失败，整批拒绝 | 改用离线规则并记录 Badcase |
+| 数据库约束冲突 | 事务回滚，不留下半批数据 | 修正 CSV 后重新导入 |
+| 重复反馈 | 指纹去重，从预览中排除 | 无需处理 |
+
+评测与指标口径见 [AI 设计说明](./ai-design.md) 与 [一页评测报告](./eval-report.md)。

@@ -79,7 +79,7 @@ else:
                 classifier = DeepSeekClassifier(
                     api_key=api_key or os.getenv("DEEPSEEK_API_KEY", ""),
                     base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-                    model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+                    model=os.getenv("DEEPSEEK_MODEL", "deepseek-flash"),
                 )
             st.session_state["prepared_import"] = service.prepare(
                 uploaded.getvalue(), mode=mode, classifier=classifier
